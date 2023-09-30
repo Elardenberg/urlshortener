@@ -2,6 +2,7 @@ package br.com.urlshortener.service
 
 import br.com.urlshortener.dto.AtualizacaoStatisticsDTO
 import br.com.urlshortener.dto.NovaURLDTO
+import br.com.urlshortener.exception.NotFoundException
 import br.com.urlshortener.model.ShortenedURL
 import br.com.urlshortener.model.Statistics
 import org.springframework.stereotype.Service
@@ -11,18 +12,18 @@ import kotlin.collections.ArrayList
 @Service
 class ShortenedURLService(
     private var urls: List<ShortenedURL> = ArrayList(),
-    private var listOfStatistics: List<Statistics> = ArrayList()) {
+    private var listOfStatistics: List<Statistics> = ArrayList(),
+    private val notFoundMessage: String = "URL não encontrada!") {
     fun listarURL(): List<ShortenedURL> {
         return urls
     }
 
     fun procurarURL(text: String): List<ShortenedURL> {
         val foundURLs = arrayListOf<ShortenedURL>()
-        for (url in urls) {
-            if (url.fullURL.contains(text)) {
-                foundURLs.add(url)
-            }
+        urls.forEach{
+            if (it.fullURL.contains(text)) foundURLs.add(it)
         }
+        foundURLs.takeIf { it.isNotEmpty() } ?: throw NotFoundException(notFoundMessage)
         return foundURLs
     }
 
