@@ -1,26 +1,42 @@
 package br.com.urlshortener.service
 
-import br.com.urlshortener.dto.AtualizacaoStatisticsDTO
 import br.com.urlshortener.dto.NovaURLDTO
+import br.com.urlshortener.dto.ShortenedURLView
 import br.com.urlshortener.exception.NotFoundException
 import br.com.urlshortener.model.ShortenedURL
 import br.com.urlshortener.model.Statistics
+import br.com.urlshortener.repository.ShortenedURLRepository
+import br.com.urlshortener.repository.StatisticsRepository
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.stream.Collectors
 
 @Service
 class ShortenedURLService(
-    private var urls: List<ShortenedURL> = ArrayList(),
-    private var listOfStatistics: List<Statistics> = ArrayList(),
-    private val notFoundMessage: String = "URL não encontrada!") {
-    fun listarURL(): List<ShortenedURL> {
-        return urls
+    private val urls: ShortenedURLRepository,
+    private val listOfStatistics: StatisticsRepository,
+    private val notFoundMessage: String = "URL não encontrada!",
+    private val statisticsService: StatisticsService) {
+    fun listarURL(nomeURL: String?,
+                  paginacao: Pageable
+    ): Iterable<ShortenedURLView> {
+        val url = if (nomeURL == null) {
+            urls.findAll(paginacao)
+        } else {
+            urls.findByFullURL(nomeURL, paginacao)
+        }
+
+        return url.stream().map { ShortenedURLView(
+            id = it.id,
+            fullURL = it.fullURL,
+            shortURL = it.shortURL,
+            statistics = statisticsService.listarStatisticsById(it.id)
+        ) }.collect(Collectors.toList())
     }
 
     fun procurarURL(text: String): List<ShortenedURL> {
         val foundURLs = arrayListOf<ShortenedURL>()
-        urls.forEach{
+        urls.findAll().forEach{
             if (it.fullURL.contains(text)) foundURLs.add(it)
         }
         foundURLs.takeIf { it.isNotEmpty() } ?: throw NotFoundException(notFoundMessage)
@@ -28,17 +44,11 @@ class ShortenedURLService(
     }
 
     fun cadastrarURL(shortenedURLDTO: NovaURLDTO) {
-        listOfStatistics = listOfStatistics.plus(Statistics(
-                id = urls.size.toLong() + 1,
-                shortURLid = urls.size.toLong() + 1,
-                timesClicked = 0
-        ))
-        urls = urls.plus(ShortenedURL(
-            id = urls.size.toLong() + 1,
+        val url = ShortenedURL(
             fullURL = shortenedURLDTO.fullURL,
-            shortURL = encurtarURL(),
-            statistics = listOfStatistics.last()
-        ))
+            shortURL = encurtarURL()
+        )
+        urls.save(url)
     }
 
     fun encurtarURL(): String {
@@ -47,18 +57,13 @@ class ShortenedURLService(
         return shortURL
     }
 
-    fun getListOfStatistics(): List<Statistics> {
-        return listOfStatistics
-    }
-
     fun deletar(id: Long) {
-        val url = urls.stream().filter{
-            it.id == id
-        }.findFirst().get()
-        urls = urls.minus(url)
-        val statistics = listOfStatistics.stream().filter{
-            it.shortURLid == id
-        }.findFirst().get()
-        listOfStatistics = listOfStatistics.minus(statistics)
+        val url = urls.findById(id).orElseThrow{NotFoundException(notFoundMessage)}
+        val listOfIDsToBeDeleted = arrayListOf<Long?>()
+        listOfStatistics.findAll().forEach{
+            if (it.shortenedURL.id == url.id) listOfIDsToBeDeleted.add(it.id)
+        }
+        listOfStatistics.deleteAllById(listOfIDsToBeDeleted)
+        urls.delete(url)
     }
 }
