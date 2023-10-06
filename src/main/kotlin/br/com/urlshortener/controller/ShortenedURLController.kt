@@ -21,22 +21,28 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.ResponseEntity
 
 @RestController
 @RequestMapping("/")
 class ShortenedURLController (
     private val urlService: ShortenedURLService,
     private val statisticsService: StatisticsService) {
-    @GetMapping
+    @GetMapping("/")
     fun listarURL(@RequestParam(required = false) nomeURL: String?,
                   @PageableDefault(size = 5) paginacao: Pageable
     ): Iterable<ShortenedURLView> {
         return urlService.listarURL(nomeURL, paginacao)
     }
 
-    @GetMapping("/{text}")
+    @GetMapping("/buscar/{text}")
     fun procurarURL(@PathVariable text: String): List<ShortenedURL> {
         return urlService.procurarURL(text)
+    }
+
+    @GetMapping("/{shortURL}")
+    fun redirectShortURL(@PathVariable shortURL: String): ResponseEntity<Unit> {
+        return urlService.acessarPorShortURL(shortURL)
     }
 
     @PostMapping
@@ -61,9 +67,14 @@ class ShortenedURLController (
         return statisticsService.listarStatistics()
     }
 
-    @GetMapping("/clicks/{id}")
+    @GetMapping("/clicks/id/{id}")
     fun listarStatisticsById(@PathVariable id: Long?): List<StatisticsView> {
         return statisticsService.listarStatisticsById(id)
+    }
+
+    @GetMapping("/clicks/dia/{day}")
+    fun listarStatisticsByDay(@PathVariable day: String): List<StatisticsView> {
+        return statisticsService.listarStatisticsByDay(day)
     }
 
 //    @PutMapping("/clicks")
