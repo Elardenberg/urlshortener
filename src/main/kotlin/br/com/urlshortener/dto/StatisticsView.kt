@@ -1,10 +1,10 @@
 package br.com.urlshortener.dto
 
-import br.com.urlshortener.model.ShortenedURL
 import java.sql.Timestamp
 
 data class StatisticsView (
     var id: Long?,
-    var clickdateTime: Timestamp,
-    var shortenedURLid: Long?
+    var shortenedURLid: Long?,
+    var fullURL: String,
+    var clickdateTime: Timestamp
 )

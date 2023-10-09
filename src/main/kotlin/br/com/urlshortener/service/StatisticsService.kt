@@ -2,7 +2,6 @@ package br.com.urlshortener.service
 
 import br.com.urlshortener.dto.AtualizacaoStatisticsDTO
 import br.com.urlshortener.dto.StatisticsView
-import br.com.urlshortener.model.ShortenedURL
 import br.com.urlshortener.model.Statistics
 import br.com.urlshortener.repository.ShortenedURLRepository
 import br.com.urlshortener.repository.StatisticsRepository
@@ -17,11 +16,7 @@ class StatisticsService(private val stats: StatisticsRepository,
                         private val urls: ShortenedURLRepository
 ) {
     fun listarStatistics(): List<StatisticsView> {
-        return stats.findAll().stream().map { StatisticsView(
-            id = it.id,
-            clickdateTime = it.clickdateTime,
-            shortenedURLid = it.shortenedURL.id
-        ) }.collect(Collectors.toList())
+        return mapView(stats.findAll())
     }
 
     fun listarStatisticsById(id: Long?): List<StatisticsView> {
@@ -30,11 +25,7 @@ class StatisticsService(private val stats: StatisticsRepository,
             if (it.shortenedURL.id == id) listOfStatisticsToBeListed.add(it.id)
         }
 
-        return stats.findAllById(listOfStatisticsToBeListed).stream().map { StatisticsView(
-            id = it.id,
-            clickdateTime = it.clickdateTime,
-            shortenedURLid = it.shortenedURL.id
-        ) }.collect(Collectors.toList())
+        return mapView(stats.findAllById(listOfStatisticsToBeListed))
     }
 
     fun listarStatisticsByDay(day: String): List<StatisticsView> {
@@ -44,11 +35,7 @@ class StatisticsService(private val stats: StatisticsRepository,
             if (haveSameDay(searchedDay, it.clickdateTime)) listOfStatisticsToBeListed.add(it.id)
         }
 
-        return stats.findAllById(listOfStatisticsToBeListed).stream().map { StatisticsView(
-            id = it.id,
-            clickdateTime = it.clickdateTime,
-            shortenedURLid = it.shortenedURL.id
-        ) }.collect(Collectors.toList())
+        return mapView(stats.findAllById(listOfStatisticsToBeListed))
     }
 
     fun stringToTimestamp(dateTimeStr: String, format: String = "dd-MM-yyyy"): Timestamp? {
@@ -79,15 +66,19 @@ class StatisticsService(private val stats: StatisticsRepository,
         return year1 == year2 && month1 == month2 && day1 == day2
     }
 
-//    fun contarClicks(contador: AtualizacaoStatisticsDTO) {
-//        val stat = stats.findById(contador.id).get()
-//        //stat.timesClicked += 1
-//    }
-
     fun clicar(novoClick: AtualizacaoStatisticsDTO) {
         val stat = Statistics(
             shortenedURL = urls.findById(novoClick.id).orElseThrow()
         )
         stats.save(stat)
+    }
+
+    fun mapView(l: MutableList<Statistics>): ArrayList<StatisticsView> {
+        return ArrayList(l.stream().map { StatisticsView(
+            id = it.id,
+            shortenedURLid = it.shortenedURL.id,
+            fullURL = it.shortenedURL.fullURL,
+            clickdateTime = it.clickdateTime
+        ) }.collect(Collectors.toList()))
     }
 }

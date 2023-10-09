@@ -5,5 +5,6 @@ data class ShortenedURLView (
     val fullURL: String,
     val shortURL: String,
     val timesAccessed: Long,
+    val dailyMeanSinceCreated: Double,
     val statistics: List<StatisticsView> = ArrayList()
 )

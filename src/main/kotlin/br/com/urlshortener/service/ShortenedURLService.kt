@@ -14,6 +14,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors
 import jakarta.servlet.http.HttpServletRequest
+import java.sql.Timestamp
+import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 
 @Service
@@ -23,31 +27,39 @@ class ShortenedURLService(
     private val notFoundMessage: String = "URL não encontrada!",
     private val statisticsService: StatisticsService,
     private val request: HttpServletRequest) {
-    fun listarURL(nomeURL: String?,
-                  paginacao: Pageable
+    fun listarURL(paginacao: Pageable
     ): Iterable<ShortenedURLView> {
-        val url = if (nomeURL == null) {
-            urls.findAll(paginacao)
-        } else {
-            urls.findByFullURL(nomeURL, paginacao)
-        }
+        val url = urls.findAll(paginacao)
+        return mapView(ArrayList(url.content))
+    }
 
-        return url.stream().map { ShortenedURLView(
+    fun calcularDiferencaEmDias(timestamp1: Timestamp, timestamp2: Timestamp): Int {
+        val date1 = Date(timestamp1.time)
+        val date2 = Date(timestamp2.time)
+
+        val diffInMillis = date1.time - date2.time
+
+        return TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS).toInt()
+    }
+
+    fun mapView(l: ArrayList<ShortenedURL>): ArrayList<ShortenedURLView> {
+        return ArrayList(l.stream().map { ShortenedURLView(
             id = it.id,
             fullURL = it.fullURL,
             shortURL = getShortURL(it.shortURL),
             timesAccessed = statisticsService.listarStatisticsById(it.id).size.toLong(),
+            dailyMeanSinceCreated = statisticsService.listarStatisticsById(it.id).size.toDouble()/calcularDiferencaEmDias(Timestamp(System.currentTimeMillis()), statisticsService.listarStatisticsById(it.id).first().clickdateTime),
             statistics = statisticsService.listarStatisticsById(it.id)
-        ) }.collect(Collectors.toList())
+        ) }.collect(Collectors.toList()))
     }
 
-    fun procurarURL(text: String): List<ShortenedURL> {
+    fun procurarURL(text: String): List<ShortenedURLView> {
         val foundURLs = arrayListOf<ShortenedURL>()
         urls.findAll().forEach{
             if (it.fullURL.contains(text)) foundURLs.add(it)
         }
         foundURLs.takeIf { it.isNotEmpty() } ?: throw NotFoundException(notFoundMessage)
-        return foundURLs
+        return mapView(foundURLs)
     }
 
     fun cadastrarURL(shortenedURLDTO: NovaURLDTO) {
@@ -81,7 +93,7 @@ class ShortenedURLService(
         urls.delete(url)
     }
 
-    fun acessarPorShortURL(shortURL: String): ResponseEntity<Unit> {
+    fun acessarPorShortURL(shortURL: String): ResponseEntity<String> {
         val headers = HttpHeaders()
         urls.findAll().forEach{
             if (it.shortURL == shortURL) {
@@ -92,10 +104,10 @@ class ShortenedURLService(
             }
         }
 
-        if(headers.isEmpty()) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
+        return if(headers.isEmpty()) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(notFoundMessage)
         } else {
-            return ResponseEntity(headers, HttpStatus.FOUND)
+            ResponseEntity(headers, HttpStatus.FOUND)
         }
     }
 }
