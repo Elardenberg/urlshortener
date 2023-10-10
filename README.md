@@ -8,9 +8,16 @@ Primeiramente, você pode usar o site [Spring Initializr](https://start.spring.i
 
 Em seguida, foram escolhidas as dependências para este projeto. A configuração ficou como mostrado abaixo:
 
-![Texto Alternativo](https://github.com/Elardenberg/urlshortener/raw/main/assets/spring%20initializr.png)
+![Spring](https://github.com/Elardenberg/urlshortener/raw/main/assets/spring%20initializr.png)
 
 Após selecionar as dependências, clique em "Generate" para baixar um arquivo Spring Boot com todas elas configuradas.
+
+## Configuração da IDE
+
+Para este projeto, a IDE utilizada foi o [IntelliJ IDEA](https://www.jetbrains.com/idea/download/?section=linux). Instalada a IDE, abrir o projeto nela dará o seguinte resultado:
+
+![Intellij](https://github.com/Elardenberg/urlshortener/raw/main/assets/intellij.png)
+
 
 ## Configurando o Banco de Dados
 
@@ -21,6 +28,16 @@ Certifique-se de ter um banco de dados instalado (por exemplo, PostgreSQL) e con
 3. Dê um nome para o Banco de Dados e selecione um banco de dados existente no seu servidor.
 
 Se preferir, você pode usar ferramentas como o pgAdmin4 para criar o banco de dados com uma interface gráfica.
+
+![IDE1](https://github.com/Elardenberg/urlshortener/raw/main/assets/db%20config%20path.png)
+
+Dê um nome para o Banco de Dados e escolha um que já tenha sido feito no seu servidor.
+
+![IDE2](https://github.com/Elardenberg/urlshortener/raw/main/assets/db%20configuration.png)
+
+No pgAdmin4, é possível fazer essa criação com uma interface gráfica:
+
+![PGADMIN](https://github.com/Elardenberg/urlshortener/raw/main/assets/pg%20admin%204.png)
 
 ## Executando o Projeto
 
