@@ -136,4 +136,10 @@ Para testar o método `deletarURL`, siga os passos abaixo:
 
 Isso permitirá que você teste a API usando o Postman e realize operações como criar novas URLs encurtadas e excluir URLs existentes.
 
+![POSTMAN](https://github.com/Elardenberg/urlshortener/raw/main/assets/postman%20post.png)
+
 As requisições do tipo GET podem ser feitas pelo postman ou por um navegador web que possua uma ferramenta de visualização de arquivos _json_. Neste exemplo, foi utilizado o Firefox. Ao se realizar uma busca de urls, pode-se clicar diretamente na url encurtada gerada, à qual o navegador tentará se conectar, e a API o redirecionará para o endereço original.
+
+![link1](https://github.com/Elardenberg/urlshortener/raw/main/assets/short%20link.png)
+
+![link2](https://github.com/Elardenberg/urlshortener/raw/main/assets/redirected%20link.png)
