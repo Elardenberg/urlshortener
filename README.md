@@ -8,7 +8,7 @@ Primeiramente, você pode usar o site [Spring Initializr](https://start.spring.i
 
 Em seguida, foram escolhidas as dependências para este projeto. A configuração ficou como mostrado abaixo:
 
-![alt text]((https://github.com/Elardenberg/urlshortener/tree/main/assets/spring%20initializr.png))
+![Texto Alternativo](https://github.com/Elardenberg/urlshortener/raw/main/assets/spring%20initializr.png)
 
 Após selecionar as dependências, clique em "Generate" para baixar um arquivo Spring Boot com todas elas configuradas.
 
